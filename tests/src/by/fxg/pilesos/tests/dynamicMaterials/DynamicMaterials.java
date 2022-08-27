@@ -1,4 +1,4 @@
-package by.fxg.pilesos.tests.environment3d;
+package by.fxg.pilesos.tests.dynamicMaterials;
 
 import org.jrenner.smartfont.SmartFontGenerator;
 
@@ -11,10 +11,9 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 
 import by.fxg.pilesos.Apparat;
 import by.fxg.pilesos.PilesosInputImpl;
-import by.fxg.pilesos.graphics.SpriteStack;
 
-public class Environment3D extends Apparat<Input3D> {
-	public static Environment3D instance;
+public class DynamicMaterials extends Apparat<Input3D> {
+	public static DynamicMaterials instance;
 	public BitmapFont appFont;
 	public TestManager manager;
 	public WorldRenderer worldRenderer;
@@ -52,6 +51,6 @@ public class Environment3D extends Apparat<Input3D> {
 		config.resizable = false;
 		config.backgroundFPS = 0;
 		config.title = "Environment3D Test";
-		new LwjglApplication(new Environment3D(), config);
+		new LwjglApplication(new DynamicMaterials(), config);
 	}
 }
