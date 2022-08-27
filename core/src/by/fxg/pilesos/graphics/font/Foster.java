@@ -1,4 +1,4 @@
-package by.fxg.pilesos.fontworks;
+package by.fxg.pilesos.graphics.font;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;

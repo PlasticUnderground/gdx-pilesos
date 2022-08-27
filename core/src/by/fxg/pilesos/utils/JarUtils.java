@@ -1,4 +1,4 @@
-package by.fxg.pilesos.gdx;
+package by.fxg.pilesos.utils;
 
 import java.io.File;
 import java.io.FileFilter;

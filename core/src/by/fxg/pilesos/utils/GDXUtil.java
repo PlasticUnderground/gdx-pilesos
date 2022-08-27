@@ -1,8 +1,9 @@
-package by.fxg.pilesos.gdx;
+package by.fxg.pilesos.utils;
 
 import java.util.Random;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.Rectangle;
 
 public class GDXUtil {
 	public static int getMouseX() {
@@ -21,8 +22,8 @@ public class GDXUtil {
 		return isMouseIn(x, y, x + w, y + h);
 	}
 	
-	public static long getTime() {
-		return System.currentTimeMillis();
+	public static boolean isMouseInArea(Rectangle rectangle) {
+		return isMouseInArea(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
 	}
 	
 	public static Random rand = new Random();

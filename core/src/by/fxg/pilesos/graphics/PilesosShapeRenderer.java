@@ -1,9 +1,9 @@
-package by.fxg.pilesos.gdx;
+package by.fxg.pilesos.graphics;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-public class EShapeRenderer extends ShapeRenderer {
+public class PilesosShapeRenderer extends ShapeRenderer {
 	public void roundedRect(float x, float y, float width, float height, float radius){
         super.rect(x + radius, y + radius, width - 2*radius, height - 2*radius);
         super.rect(x + radius, y, width - 2*radius, radius);

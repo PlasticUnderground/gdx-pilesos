@@ -10,9 +10,9 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.utils.Array;
 
 import by.fxg.pilesos.Pilesos;
+import by.fxg.pilesos.PilesosInputImpl;
 import by.fxg.pilesos.console.Console.Message;
-import by.fxg.pilesos.gdx.EInputProcessor;
-import by.fxg.pilesos.gdx.GDXUtil;
+import by.fxg.pilesos.utils.GDXUtil;
 
 public class ConsoleRenderer {
 	private SpriteBatch batch;
@@ -41,7 +41,7 @@ public class ConsoleRenderer {
 	private boolean handleIdentities = false;
 	private int identIndex = -1;
 		
-	public void render(Camera cam, EInputProcessor dip, int screenWidth, int screenHeight) {
+	public void render(Camera cam, PilesosInputImpl dip, int screenWidth, int screenHeight) {
 		if (dip.isKeyboardDown(Keys.GRAVE, false)) {
 			this.isShown = !this.isShown;
 			if (this.isShown) this.isWriting = true;

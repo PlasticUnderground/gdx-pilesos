@@ -4,7 +4,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 
-import by.fxg.pilesos.gdx.SpriteBuffer;
+import by.fxg.pilesos.graphics.SpriteStack;
 
 public abstract class Apparat<T extends InputProcessor> extends ApplicationAdapter {
 	protected long tick = 1;
@@ -25,11 +25,16 @@ public abstract class Apparat<T extends InputProcessor> extends ApplicationAdapt
 	
 	public void dispose() {
 		super.dispose();
-		SpriteBuffer.dispose();
+		SpriteStack.dispose();
 	}
 	
 	public void stop() {
 		Gdx.app.exit();
+	}
+	
+	public void resize(int width, int height) {
+		this.width = width;
+		this.height = height;
 	}
 	
 	public T getInput() { return this.input; }

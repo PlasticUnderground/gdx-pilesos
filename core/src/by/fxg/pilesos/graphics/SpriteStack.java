@@ -1,4 +1,4 @@
-package by.fxg.pilesos.gdx;
+package by.fxg.pilesos.graphics;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +9,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
-public class SpriteBuffer {
+public class SpriteStack {
 	private static Map<String, Texture> textureList = new HashMap<>();
 	private static Map<String, TextureRegion> textureRegionList = new HashMap<>();
 	

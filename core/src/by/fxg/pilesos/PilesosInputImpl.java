@@ -1,11 +1,9 @@
-package by.fxg.pilesos.gdx;
+package by.fxg.pilesos;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 
-import by.fxg.pilesos.Pilesos;
-
-public class EInputProcessor implements InputProcessor {
+public class PilesosInputImpl implements InputProcessor {
 	private static final String 
 		SYMBOL_RU = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
 		SYMBOL_RUI = "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ",

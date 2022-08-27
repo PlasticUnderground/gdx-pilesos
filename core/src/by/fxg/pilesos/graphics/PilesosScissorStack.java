@@ -1,15 +1,15 @@
-package by.fxg.pilesos.gdx;
+package by.fxg.pilesos.graphics;
 
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.badlogic.gdx.utils.Array;	
 
-public class ScissorBuffer {
-	public static ScissorBuffer instance;
+public class PilesosScissorStack {
+	public static PilesosScissorStack instance;
 	private Array<Rectangle> scissors;
 	private int nextIndex = 0;
 	
-	public ScissorBuffer(int amount) {
+	public PilesosScissorStack(int amount) {
 		instance = this;
 		this.scissors = new Array<>(amount);
 		for (int i = 0; i != amount; i++) {
@@ -17,7 +17,7 @@ public class ScissorBuffer {
 		}
 	}
 	
-	public ScissorBuffer setBounds(int idx, int x, int y, int sx, int sy) {
+	public PilesosScissorStack setBounds(int idx, int x, int y, int sx, int sy) {
 		if (idx >= this.scissors.size) return null;
 		this.scissors.get(idx).set(x, y, sx, sy);
 		return this;

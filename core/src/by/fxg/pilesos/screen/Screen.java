@@ -7,14 +7,14 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
-import by.fxg.libtweaks.ShapeDrawerTweak;
-import by.fxg.pilesos.fontworks.Foster;
+import by.fxg.pilesos.graphics.font.Foster;
+import space.earlygrey.shapedrawer.ShapeDrawer;
 
 public abstract class Screen {
 	private static TextureRegion shapeDrawerRegion;
 	public Foster foster;
 	public PolygonSpriteBatch batch;
-	public ShapeDrawerTweak shape;
+	public ShapeDrawer shape;
 	
 	public Screen() { this(true); }
 	public Screen(boolean create) {
@@ -28,7 +28,7 @@ public abstract class Screen {
 				pixmap.dispose();
 			}
 			this.batch = new PolygonSpriteBatch();
-			this.shape = new ShapeDrawerTweak(this.batch, shapeDrawerRegion);
+			this.shape = new ShapeDrawer(this.batch, shapeDrawerRegion);
 			this.foster.setBatch(this.batch);
 		}
 	}

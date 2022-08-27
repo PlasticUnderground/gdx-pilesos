@@ -1,4 +1,4 @@
-package by.fxg.pilesos.gdx;
+package by.fxg.pilesos.graphics;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
