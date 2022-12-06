@@ -78,10 +78,11 @@ public class WorldRenderer implements ICameraMovement {
 			this.camera.up.set(0, 1, 0);
 			this.camera.rotate(this.tempMatrix);
 			this.camera.position.set(this.position);
-			
+
 			this.look.x %= 360;
 			this.look.y %= 360;
 		}
+		
 		this.tempLook.setZero();
 		this.tempMove.setZero();
 		this.camera.update();
