@@ -7,6 +7,7 @@ import com.badlogic.gdx.InputProcessor;
 import by.fxg.pilesos.graphics.SpriteStack;
 
 public abstract class Apparat<T extends InputProcessor> extends ApplicationAdapter {
+	protected String[] programArgs;
 	protected long tick = 1;
 	protected T input;
 	public int width, height;
@@ -35,6 +36,18 @@ public abstract class Apparat<T extends InputProcessor> extends ApplicationAdapt
 	public void resize(int width, int height) {
 		this.width = width;
 		this.height = height;
+	}
+	
+	public Apparat<T> setProgramArgs(String... args) {
+		this.programArgs = args;
+		return this;
+	}
+	
+	public boolean hasProgramArgument(String arg) {
+		for (String arg$ : this.programArgs) {
+			if (arg.toLowerCase().equals(arg$.toLowerCase())) return true;
+		}
+		return false;
 	}
 	
 	public T getInput() { return this.input; }
