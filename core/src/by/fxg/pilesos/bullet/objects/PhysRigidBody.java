@@ -9,7 +9,10 @@ import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.collision.btCapsuleShape;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
+import com.badlogic.gdx.physics.bullet.collision.btConeShape;
+import com.badlogic.gdx.physics.bullet.collision.btCylinderShape;
 import com.badlogic.gdx.physics.bullet.collision.btSphereShape;
+import com.badlogic.gdx.physics.bullet.collision.btStaticPlaneShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody.btRigidBodyConstructionInfo;
 
@@ -18,32 +21,17 @@ import by.fxg.pilesos.bullet.PhysMotionState;
 public class PhysRigidBody extends PhysBaseObject {
 	protected btRigidBody body;
 	protected btRigidBodyConstructionInfo info;
+	protected PhysMotionState state;
 	
+	//private constructor, currently available to create PhysRigidBody only with Builder
 	private PhysRigidBody() {}
-	
-	/** Creates PhysRigidBody, applies own userData to object **/
-	public PhysRigidBody(String name, btRigidBody body) {
-		this.state = new PhysMotionState(new Matrix4());
-		this.name = name;
-		this.body = body;
-		this.body.setMotionState(this.state);
-		this.body.userData = this;
-		this.shape = body.getCollisionShape();
-	}
-	
-	/** Creates PhysRigidBody with provided info **/
-	public PhysRigidBody(String name, btRigidBodyConstructionInfo info, int bulletFlags, long flags) {
-		this.state = new PhysMotionState(new Matrix4());
-		this.body = new btRigidBody(info);
-		this.body.setMotionState(this.state);
-		this.body.userData = this;
-		this.shape = this.body.getCollisionShape();
-		this.name = name;
-		this.flags = flags;
-	}
 	
 	public btRigidBody getBody() {
 		return this.body;
+	}
+	
+	public PhysMotionState getState() {
+		return this.state;
 	}
 	
 	public btCollisionObject getObject() {
@@ -51,153 +39,212 @@ public class PhysRigidBody extends PhysBaseObject {
 	}
 	
 	public void dispose() {
-		if (this.body != null) this.body.dispose();
-		if (this.info != null) this.info.dispose();
+		if (this.body != null) this.body.release();
+		if (this.info != null) this.info.release();
+		if (this.state != null) this.state.release();
 		super.dispose();
 	}
-
-	//TODO REORGANIZE, MAKE OBJECT CREATION IN THE BUILD METHOD
+	
 	public static class Builder {
-		private PhysRigidBody physRigidBody;
+		private String name;
+		private btCollisionShape shape;
+		private PhysMotionState physMotionState;
+		private btRigidBodyConstructionInfo constructionInfo;
+		
+		private Vector3 position = new Vector3(), scale = new Vector3(1, 1, 1);
+		private Quaternion rotation = new Quaternion();
+		
+		private long physFlags;
+		private int activationState = IPhysObject.ACTSTATE_ACTIVE, collisionFlags, filterMask = IPhysObject.FILTER_ALL, filterGroup = IPhysObject.FILTER_btDEFAULT;
+		private boolean calculateInertia = true;
+		private float mass = 1f;
+		
+		public Builder() {
+			this.setName(null);
+		}
 		
 		public Builder(String name) {
-			this.physRigidBody = new PhysRigidBody();
-			this.physRigidBody.state = new PhysMotionState(new Matrix4());
-			this.physRigidBody.info = new btRigidBodyConstructionInfo(1f, this.physRigidBody.state, null);
-			this.physRigidBody.name = (name == null ? UUID.randomUUID().toString() : name);
-			this.physRigidBody.body = new btRigidBody(this.physRigidBody.info);
-			this.physRigidBody.body.userData = this.physRigidBody;
+			this.setName(name);
 		}
 		
-		/** Disposes all old objects, creates new RigidBody **/
-		public Builder setConstructionInfo(btRigidBodyConstructionInfo info) {
-			if (info != null) {
-				if (this.physRigidBody.info != null) this.physRigidBody.info.dispose();
-				if (this.physRigidBody.body != null) this.physRigidBody.body.dispose();
-				if (this.physRigidBody.shape != null) this.physRigidBody.shape.dispose();
-				
-				this.physRigidBody.info = info;
-				this.physRigidBody.body = new btRigidBody(info);
-				this.physRigidBody.body.setMotionState(this.physRigidBody.state);
-				this.physRigidBody.body.userData = this.physRigidBody;
-				this.physRigidBody.shape = info.getCollisionShape();
-			}
+		/** Sets object name **/
+		public Builder setName(String name) {
+			this.name = name == null ? UUID.randomUUID().toString() : name;
 			return this;
 		}
 		
-		public Builder setShapeAABB(Vector3 scale) {
-			this.setShape(new btBoxShape(new Vector3(0.5f, 0.5f, 0.5f)));
-			if (scale != null) this.physRigidBody.shape.setLocalScaling(scale);
+		public Builder setPhysMotionState(PhysMotionState physMotionState) {
+			this.physMotionState = physMotionState;
 			return this;
 		}
 		
-		public Builder setShapeSphere(Vector3 scale) {
-			this.setShape(new btSphereShape(0.5f));
-			if (scale != null) this.physRigidBody.shape.setLocalScaling(scale);
-			return this;
-		}
+		//Shape
+		/** Sets box shape if construction info is not set **/ public Builder setShapeBox() { return this.setShapeBox(0.5F, 0.5F, 0.5F); }
+		/** Sets box shape if construction info is not set **/ public Builder setShapeBox(float x, float y, float z) { return this.setShapeBox(new Vector3(x, y, z)); }
+		/** Sets box shape if construction info is not set **/ public Builder setShapeBox(Vector3 vec) { return this.setShape(new btBoxShape(vec)); }
 		
-		public Builder setShapeCapsule(Vector3 scale) {
-			this.setShape(new btCapsuleShape(0.5f, 1f));
-			if (scale != null) this.physRigidBody.shape.setLocalScaling(scale);
-			return this;
-		}
+		/** Sets capsule shape if construction info is not set **/ public Builder setShapeCapsule() { return this.setShapeCapsule(0.5F, 1.0F); }
+		/** Sets capsule shape if construction info is not set **/ public Builder setShapeCapsule(float radius, float height) { return this.setShape(new btCapsuleShape(radius, height)); }
 		
+		/** Sets cone shape if construction info is not set **/ public Builder setShapeCone() { return this.setShapeCone(0.5F, 0.5F); }
+		/** Sets cone shape if construction info is not set **/ public Builder setShapeCone(float radius, float height) { return this.setShape(new btConeShape(radius, height)); }
+		
+		/** Sets cylinder shape if construction info is not set **/ public Builder setShapeCylinder() { return this.setShapeCylinder(0.5F, 0.5F, 0.5F); }
+		/** Sets cylinder shape if construction info is not set **/ public Builder setShapeCylinder(float x, float y, float z) { return this.setShapeCylinder(new Vector3(x, y, z)); }
+		/** Sets cylinder shape if construction info is not set **/ public Builder setShapeCylinder(Vector3 halfSize) { return this.setShape(new btCylinderShape(halfSize)); }
+		
+		/** Sets plane shape if construction info is not set **/ public Builder setShapePlane() { return this.setShapePlane(Vector3.Y, 0.5F); }
+		/** Sets plane shape if construction info is not set **/ public Builder setShapePlane(Vector3 normal, float constant) { return this.setShape(new btStaticPlaneShape(normal, constant)); }
+		
+		/** Sets sphere shape if construction info is not set **/ public Builder setShapeSphere() { return this.setShapeSphere(0.5F); }
+		/** Sets sphere shape if construction info is not set **/ public Builder setShapeSphere(float radius) { return this.setShape(new btSphereShape(radius)); }
+		
+		/** Sets shape if construction info is not set **/
 		public Builder setShape(btCollisionShape shape) {
-			if (shape != null) {
-				if (this.physRigidBody.shape != null && !this.physRigidBody.shape.isDisposed()) {
-					this.physRigidBody.shape.dispose();
-				}
-				this.physRigidBody.shape = shape;
-				this.physRigidBody.body.setCollisionShape(shape);
-			}
+			if (this.shape != null) this.shape.release();
+			this.shape = shape;
 			return this;
 		}
 		
-		public Builder setShapeSize(Vector3 size) {
-			if (size != null && this.physRigidBody.shape != null) {
-				this.physRigidBody.shape.setLocalScaling(size);
-			}
+		/** Sets mass value for further inertia calculation **/
+		public Builder setMass(float mass, boolean calculateInertia) {
+			this.mass = mass;
+			this.calculateInertia = calculateInertia;
 			return this;
 		}
 		
-		public Builder setCollisionFlags(int bulletFlags) {
-			this.physRigidBody.body.setCollisionFlags(bulletFlags);
+		//Flags
+		/** Returns {@link IPhysObject} flags **/
+		public long getPhysFlags() { return this.physFlags; }
+		/** Sets {@link IPhysObject} flags **/
+		public Builder setPhysFlags(long flags) {
+			this.physFlags = flags;
 			return this;
 		}
 		
-		public Builder setObjectFlags(long flags) {
-			this.physRigidBody.flags = flags;
+		/** Returns activation state **/
+		public int getActivationState() { return this.activationState; }
+		/** Sets activation state **/
+		public Builder setActivationState(int activationFlag) {
+			this.activationState = activationFlag;
 			return this;
 		}
 		
-		public Builder addFlag(long flag) {
-			this.physRigidBody.addFlag(flag);
+		/** Returns collision flags **/
+		public int getCollisionFlags() { return this.collisionFlags; }
+		/** Sets collision flags **/
+		public Builder setCollisionFlags(int collisionFlags) {
+			this.collisionFlags = collisionFlags;
 			return this;
 		}
 		
-		public Builder removeFlag(long flag) {
-			this.physRigidBody.removeFlag(flag);
+		/** Returns collision filter mask **/
+		public int getCollisionFilterMask() { return this.filterMask; }
+		/** Sets collision filter mask **/
+		public Builder setCollisionFilterMask(int filterMask) {
+			this.filterMask = filterMask;
 			return this;
 		}
 		
-		public Builder setPosition(float x, float y, float z) { return this.setPosition(new Vector3(x, y, z)); }
+		/** Returns collision filter group **/
+		public int getCollisionFilterGroup() { return this.filterGroup; }
+		/** Sets collision filter group **/
+		public Builder setCollisionFilterGroup(int filterGroups) {
+			this.filterGroup = filterGroups;
+			return this;
+		}
+		
+		//Transforms
+		/** Sets position of object **/
+		public Builder setPosition(float x, float y, float z) {
+			this.position.set(x, y, z);
+			return this;
+		}
+		
+		/** Sets position of object **/
 		public Builder setPosition(Vector3 position) {
-			if (position != null) {
-				Matrix4 transform = this.physRigidBody.body.getWorldTransform();
-				transform.setTranslation(position);
-				this.physRigidBody.body.setWorldTransform(transform);
-			}
+			this.position.set(position);
 			return this;
 		}
 		
-		public Builder setScale(float x, float y, float z) { return this.setScale(new Vector3(x, y, z)); }
+		/** Sets scale of object **/
+		public Builder setScale(float x, float y, float z) {
+			this.scale.set(x, y, z);
+			return this;
+		}
+		
+		/** Sets scale of object **/
 		public Builder setScale(Vector3 scale) {
-			if (scale != null) {
-				Vector3 tmpPosition = new Vector3();
-				Quaternion tmpRotation = new Quaternion();
-				Matrix4 transform = this.physRigidBody.body.getWorldTransform();
-				tmpPosition = transform.getTranslation(tmpPosition);
-				tmpRotation = transform.getRotation(tmpRotation);
-				transform.setTranslation(tmpPosition);
-				transform.rotate(tmpRotation);
-				transform.scale(scale.x, scale.y, scale.z);
-				this.physRigidBody.body.setWorldTransform(transform);
-			}
+			this.scale.set(scale);
 			return this;
 		}
 		
-		public Builder setRotation(float yaw, float pitch, float roll) { return this.setRotation(new Quaternion().setEulerAngles(yaw, pitch, roll)); }
+		/** Sets rotation of object(in euler angles) **/
+		public Builder setRotation(float pitch, float yaw, float roll) {
+			this.rotation.setEulerAngles(pitch, yaw, roll);
+			return this;
+		}
+		
+		/** Sets rotation of object(in euler angles) **/
+		public Builder setRotation(Vector3 rotation) {
+			this.rotation.setEulerAngles(rotation.y, rotation.x, rotation.z);
+			return this;
+		}
+		
+		/** Sets rotation of object **/
 		public Builder setRotation(Quaternion rotation) {
-			if (rotation != null) {
-				Vector3 tmpPosition = new Vector3(), tmpScale = new Vector3();
-				Matrix4 transform = this.physRigidBody.body.getWorldTransform();
-				tmpPosition = transform.getTranslation(tmpPosition);
-				tmpScale = transform.getScale(tmpScale);
-				transform.setTranslation(tmpPosition);
-				transform.rotate(rotation);
-				transform.scale(tmpScale.x, tmpScale.y, tmpScale.z);
-				this.physRigidBody.body.setWorldTransform(transform);
-			}
+			this.rotation.set(rotation);
 			return this;
 		}
 		
-		public Builder setMass(float mass) {
-			if (this.physRigidBody.shape != null) {
-				Vector3 inertia = new Vector3();
-				this.physRigidBody.shape.calculateLocalInertia(mass, inertia);
-				this.physRigidBody.body.setMassProps(mass, inertia);
-			}
-			return this;
-		}
-		
-		public btRigidBody getBody() {
-			return this.physRigidBody.body;
-		}
-		
+		/** Builds PhysRigidBody(btRigidBody with parameters) <br>
+		 *  <b>! Warning, this builder is not using {@link btRigidBodyConstructionInfo}'s motion state and shape, you should set them separately !</b> **/
 		public PhysRigidBody build() {
-			if (this.physRigidBody.flags == 0) this.physRigidBody.flags = IPhysObject.OBJECT_STATIC;
-			return this.physRigidBody;
+			if (this.shape == null) this.shape = new btBoxShape(new Vector3(0.5F, 0.5F, 0.5F));
+			if (this.physMotionState == null) this.physMotionState = new PhysMotionState(new Matrix4());
+			if (this.constructionInfo == null) this.constructionInfo = new btRigidBodyConstructionInfo(this.mass > 0 ? this.mass : 0, this.physMotionState, this.shape);
+			
+			PhysRigidBody physObject = new PhysRigidBody();
+			physObject.name = this.name;
+			physObject.setPhysFlags(this.physFlags);
+			physObject.setFilterMask(this.filterMask);
+			physObject.setFilterGroup(this.filterGroup);
+			physObject.shape = this.shape;
+			physObject.state = this.physMotionState;
+			physObject.info = this.constructionInfo;
+
+			physObject.body = new btRigidBody(this.constructionInfo);
+			physObject.body.setMotionState(this.physMotionState);
+			physObject.body.setCollisionShape(this.shape);
+			physObject.body.setCollisionFlags(this.collisionFlags);
+			physObject.body.setActivationState(this.activationState);
+			physObject.body.userData = physObject;
+			
+			//Inertia calculation
+			if (this.calculateInertia) {
+				Vector3 inertia = new Vector3();
+				physObject.shape.calculateLocalInertia(this.mass, inertia);
+				physObject.body.setMassProps(this.mass, inertia);
+			}
+			
+			//Transforms
+			Matrix4 transform = physObject.body.getWorldTransform();
+			transform.setToTranslation(this.position);
+			transform.rotate(this.rotation);
+			transform.scale(this.scale.x, this.scale.x, this.scale.x);
+			physObject.body.setWorldTransform(transform);
+			return physObject;
+		}
+		
+		public void reset() {
+			this.shape = null;
+			this.physMotionState = null;
+			this.constructionInfo = null;
+			this.position = new Vector3();
+			this.rotation = new Quaternion();
+			this.scale = new Vector3();
+			this.physFlags = this.activationState = this.collisionFlags = this.filterMask = this.filterGroup = 0;
+			this.mass = 0;
 		}
 	}
 }
