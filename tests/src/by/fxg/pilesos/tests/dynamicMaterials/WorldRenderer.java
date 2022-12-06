@@ -14,6 +14,9 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.graphics.g3d.environment.PointLight;
+import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
+import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
@@ -43,6 +46,8 @@ public class WorldRenderer implements ICameraMovement {
 	private Texture mask;
 	private ShaderProgram stencilReplacerProgram;
 	
+	public PointLight light;
+
 	public WorldRenderer(DynamicMaterials app) {
 		this.camera = new PerspectiveCamera(67f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		this.camera.position.set(0.0F, 0.0F, 0.0F);
@@ -50,10 +55,20 @@ public class WorldRenderer implements ICameraMovement {
 		this.camera.near = 0.1F;
 		this.camera.far = 20.0F;
 		
-		this.batch = new ModelBatch();
+		
+		DefaultShader.Config cfg = new DefaultShader.Config();
+		cfg.vertexShader = Gdx.files.internal("resources/dynamicmaterials/spacepickle/phong.vert").readString();
+		cfg.fragmentShader = Gdx.files.internal("resources/dynamicmaterials/spacepickle/phong.frag").readString();
+		this.light = new PointLight().setPosition(0.5f, 0, 0);
+		this.light.color.set(1, 1, 1, 1);
+		this.light.intensity = 5F;
+		
+		
+		this.batch = new ModelBatch(new DefaultShaderProvider(cfg));
 		this.environment = new Environment();
-		this.environment.set(ColorAttribute.createAmbientLight(1.0F, 1.0F, 1.0F, 1.0F));
+		this.environment.set(ColorAttribute.createAmbientLight(0.5F, 0.5F, 0.5F, 1.0F));
 		this.environment.set(ColorAttribute.createFog(0.12f, 0.12F, 0.12F, 1.0F));
+		this.environment.add(this.light);
 		
 		this.healthbag = new ModelInstance(app.manager.get("assets/models/kuban-healthbag.gltf", SceneAsset.class).scene.model);
 		this.healthbag.materials.get(0).set(TextureAttribute.createDiffuse(SpriteStack.getTexture("assets/textures/kuban-healthbag.png")));
@@ -127,6 +142,17 @@ public class WorldRenderer implements ICameraMovement {
 		if (this.isPaused && app.getInput().isMouseDown(0, false)) {
 			app.getInput().setCursorCatched(true);
 		} else if (!this.isPaused) {
+			if (app.getInput().isKeyboardDown(Keys.ENTER, false)) {
+				this.stencilReplacerProgram = new ShaderProgram(Gdx.files.internal("resources/dynamicmaterials/spacepickle/pickle.vert").readString(), Gdx.files.internal("resources/dynamicmaterials/spacepickle/pickle.frag").readString());
+				if (!this.stencilReplacerProgram.isCompiled()) {
+					System.out.println(this.stencilReplacerProgram.getLog());
+				} else {
+					System.out.println("compiled");
+					this.stencilReplacerProgram.bind();
+					this.stencilReplacerProgram.setUniformi("u_mainTexture", 1);
+					this.stencilReplacerProgram.setUniformi("u_maskTexture", 2);
+				}
+			}
 			if (app.getInput().isKeyboardDown(Keys.ESCAPE, false)) {
 				app.getInput().setCursorCatched(false);
 				Gdx.input.setCursorPosition(width / 2, height / 2);
@@ -156,6 +182,7 @@ public class WorldRenderer implements ICameraMovement {
 			this.look.x %= 360;
 			this.look.y %= 360;
 		}
+
 		this.tempLook.setZero();
 		this.tempMove.setZero();
 		this.camera.update();
