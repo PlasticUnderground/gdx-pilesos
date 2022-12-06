@@ -25,8 +25,7 @@ public class PilesosInputImpl implements InputProcessor {
 	
 	public boolean isCursorCatched() { return Gdx.input.isCursorCatched() || this.isCursorCatched; }
 	public void setCursorCatched(boolean bool) {
-		Gdx.input.setCursorCatched(bool);
-		this.isCursorCatched = bool;
+		Gdx.input.setCursorCatched(this.isCursorCatched = bool);
 	}
 	
 //===========================================================================================================================
